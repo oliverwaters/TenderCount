@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Tender Count</title>
+	<script src="http://code.jquery.com/jquery-1.5.js"></script>
+	<script type="text/javascript" charset="utf-8">
+
+		var subDomain
+		var supportURL
+		var apiKey
+		var successRet
+
+		function performCommand(event)
+		{
+		    if (event.command === "tenderCount") {
+		    	if (successRet == false) {
+		    		alert("Could not connect to Tender API. Ensure your settings are correct and you have a connection to the internet.");
+		    	} else {
+		    		subDomain = safari.extension.settings.subDomain;
+					supportURL = "http://"+subDomain+".tenderapp.com";
+					event.target.browserWindow.openTab().url = supportURL;
+		    	}
+			}
+		}
+
+		function validateCommand(event)
+		{
+		    if (event.command === "tenderCount") {
+    
+		    	subDomain = safari.extension.settings.subDomain;
+		    	apiKey = safari.extension.settings.apiKey;
+    	
+		       	if (subDomain == undefined || subDomain == "" || apiKey == undefined || apiKey == ""){
+		    		event.target.disabled = true;
+		    		successRet = false;
+		    		event.target.image = safari.extension.baseURI + "images/toolbarIcon.png";
+		    		event.target.toolTip = "API Key or Subdomain setting incomplete.";
+					event.target.badge = 0; 
+		    	}
+		    	else {
+		    		event.target.disabled = false;
+		    		var apiURL = "http://api.tenderapp.com/"+subDomain+"/discussions/pending?auth="+apiKey;
+		    		$.getJSON(apiURL, function(data) {
+		  				successRet = true;
+		  				event.target.image = safari.extension.baseURI + "images/toolbarIcon.png";
+		  				event.target.badge = data.total;
+		  				if (data.total == 1) {
+		  					event.target.toolTip = "There is 1 discussion pending";
+		  				} else {
+		  					event.target.toolTip = "There are "+data.total+" discussions pending";
+		  				}
+					}).error(function() {
+		  				successRet = false;
+		  				event.target.image = safari.extension.baseURI + "images/toolbarIconError.png";
+		  				event.target.toolTip = "Could not connect to Tender API. Check settings and connection.";
+						event.target.badge = 0;  			
+		  			});
+  			
+		    	}
+		    }
+		}
+
+		function settingsChanged(event) {
+			if (event.key == "apiKey")
+			{
+				apiKey = event.newValue;
+			}
+	
+			if (event.key == "subDomain")
+			{
+				subDomain = event.newValue;
+			}
+		}
+
+		safari.application.addEventListener("command", performCommand, true);
+		safari.application.addEventListener("validate", validateCommand, true);
+		safari.extension.settings.addEventListener("change", settingsChanged, false);
+	</script>
+</head>
+<body>
+</body>
+</html>

@@ -1,0 +1,1 @@
+Tender Count (originally by Oliver Waters) is licensed under a Creative Commons Attribution-Share Alike 3.0 Unported License.
