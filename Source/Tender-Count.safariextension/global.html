@@ -6,6 +6,7 @@
 	<script type="text/javascript" charset="utf-8">
 
 		var subDomain
+		var customURL
 		var supportURL
 		var apiKey
 		var successRet
@@ -15,9 +16,20 @@
 		    if (event.command === "tenderCount") {
 		    	if (successRet == false) {
 		    		alert("Could not connect to Tender API. Ensure your settings are correct and you have a connection to the internet.");
-		    	} else {
+		    	} 
+		    	else {
+		    		customURL = safari.extension.settings.customURL;
 		    		subDomain = safari.extension.settings.subDomain;
-					supportURL = "http://"+subDomain+".tenderapp.com";
+					if (customURL == undefined || customURL == "http://") {
+						supportURL = "http://"+subDomain+".tenderapp.com";
+					} 
+					else {
+						if (!/^(f|ht)tps?:\/\//i.test(customURL)) {
+		      				customURL = "http://" + customURL;
+						}
+						supportURL = customURL;
+					}
+					
 					event.target.browserWindow.openTab().url = supportURL;
 		    	}
 			}
@@ -69,6 +81,10 @@
 			if (event.key == "subDomain")
 			{
 				subDomain = event.newValue;
+			}
+
+			if (event.key == "customURL"){
+				customURL = event.newValue;
 			}
 		}
 
